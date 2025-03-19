@@ -5,7 +5,10 @@ import torch.nn as nn
 
 from models.common import Conv, DWConv
 from utils.google_utils import attempt_download
+import torch.serialization
 
+
+torch.serialization.add_safe_globals([np.ndarray])
 
 class CrossConv(nn.Module):
     # Cross Convolution Downsample
@@ -249,7 +252,7 @@ def attempt_load(weights, map_location=None):
     model = Ensemble()
     for w in weights if isinstance(weights, list) else [weights]:
         attempt_download(w)
-        ckpt = torch.load(w, map_location=map_location)  # load
+        ckpt = torch.load(w, map_location=map_location, weights_only=False)  # load
         model.append(ckpt['ema' if ckpt.get('ema') else 'model'].float().fuse().eval())  # FP32 model
     
     # Compatibility updates
